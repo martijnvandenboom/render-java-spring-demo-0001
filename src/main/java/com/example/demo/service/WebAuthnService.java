@@ -19,7 +19,8 @@ public class WebAuthnService {
     @Autowired
     private WebAuthnCredentialRepository credentialRepository;
 
-    private final String rpId = "localhost";
+    //private final String rpId = "localhost";
+    private final String rpId = "render-java-spring-demo-0001.onrender.com";
     private final String rpName = "Demo App";
 
     public RegistrationRequest startRegistration(User user) throws IOException, Base64UrlException {
