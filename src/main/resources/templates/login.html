@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Demo App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-header h2 {
+            color: #333;
+            font-weight: 600;
+        }
+        .form-control {
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 5px;
+            font-weight: 600;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .btn-login:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            color: white;
+            text-decoration: none;
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+        .error-alert {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h2>🔐 Login</h2>
+            <p class="text-muted">Welcome back to Demo App</p>
+        </div>
+
+        <div th:if="${param.error}" class="alert alert-danger error-alert" role="alert">
+            Invalid username or password
+        </div>
+
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs mb-3" id="loginTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" 
+                        type="button" role="tab">Password</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="webauthn-tab" data-bs-toggle="tab" data-bs-target="#webauthn" 
+                        type="button" role="tab">Passkey/Security Key</button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="loginTabContent">
+            <!-- Password Login Tab -->
+            <div class="tab-pane fade show active" id="password" role="tabpanel">
+                <form method="post" action="/login">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required placeholder="Enter your username">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required placeholder="Enter your password">
+                    </div>
+
+                    <button type="submit" class="btn btn-login">Sign In</button>
+                </form>
+            </div>
+
+            <!-- WebAuthn Login Tab -->
+            <div class="tab-pane fade" id="webauthn" role="tabpanel">
+                <div class="mb-3">
+                    <label for="webauthn-username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="webauthn-username" placeholder="Enter your username" 
+                           autocomplete="username webauthn">
+                </div>
+
+                <button type="button" class="btn btn-login" onclick="authenticateWithWebAuthn()">
+                    🔑 Authenticate with Passkey
+                </button>
+
+                <div id="webauthn-status" class="mt-3"></div>
+            </div>
+        </div>
+
+        <div class="register-link">
+            Don't have an account? <a href="/register">Create one here</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function base64UrlToBase64(base64url) {
+            let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+            // Add padding if needed
+            const mod = base64.length % 4;
+            if (mod > 0) {
+                base64 += '='.repeat(4 - mod);
+            }
+            return base64;
+        }
+
+        function base64ToBase64Url(base64) {
+            return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        }
+
+        function base64ToArrayBuffer(base64) {
+            const binary_string = atob(base64);
+            const bytes = new Uint8Array(binary_string.length);
+            for (let i = 0; i < binary_string.length; i++) {
+                bytes[i] = binary_string.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function arrayBufferToBase64Url(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            const base64 = btoa(binary);
+            return base64ToBase64Url(base64);
+        }
+
+        async function authenticateWithWebAuthn() {
+            const username = document.getElementById('webauthn-username').value.trim();
+            const statusDiv = document.getElementById('webauthn-status');
+
+            if (!username) {
+                statusDiv.innerHTML = '<div class="alert alert-warning">Please enter your username</div>';
+                return;
+            }
+
+            try {
+                statusDiv.innerHTML = '<div class="alert alert-info">Starting authentication...</div>';
+                console.log('Username:', username);
+
+                // Step 1: Get authentication options from server
+                const response = await fetch('/api/auth/authenticate/begin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: username })
+                });
+
+                const data = await response.json();
+                console.log('Server response:', data);
+
+                if (data.error) {
+                    statusDiv.innerHTML = '<div class="alert alert-danger">Error: ' + data.error + '</div>';
+                    return;
+                }
+
+                // Debug: Check if credentials are available
+                if (!data.options.allowCredentials || data.options.allowCredentials.length === 0) {
+                    statusDiv.innerHTML = '<div class="alert alert-warning">No passkeys found for this user. Please register a passkey first.</div>';
+                    console.warn('No credentials available for user:', username);
+                    return;
+                }
+                
+                console.log('Available credentials:', data.options.allowCredentials.length);
+                data.options.allowCredentials.forEach((cred, i) => {
+                    console.log('Credential ' + i + ':', cred.id.substring(0, 20) + '...');
+                });
+
+                // Step 2: Convert challenge and credential IDs from Base64Url to ArrayBuffer
+                const base64Challenge = base64UrlToBase64(data.challenge);
+                data.options.challenge = base64ToArrayBuffer(base64Challenge);
+                
+                console.log('=== AUTH DEBUG ===');
+                console.log('Challenge (Base64Url):', data.challenge);
+                console.log('Challenge (ArrayBuffer length):', data.options.challenge.byteLength);
+                console.log('Number of allowed credentials:', data.options.allowCredentials?.length || 0);
+                
+                if (data.options.allowCredentials) {
+                    data.options.allowCredentials = data.options.allowCredentials.map((cred, idx) => {
+                        const decodedId = base64ToArrayBuffer(base64UrlToBase64(cred.id));
+                        console.log(`Credential ${idx}:`);
+                        console.log(`  - ID (Base64Url): ${cred.id}`);
+                        console.log(`  - ID length: ${cred.id.length}`);
+                        console.log(`  - Decoded ArrayBuffer length: ${decodedId.byteLength}`);
+                        console.log(`  - Type: ${cred.type}`);
+                        return {
+                            ...cred,
+                            id: decodedId
+                        };
+                    });
+                }
+                console.log('==================');
+
+                statusDiv.innerHTML = '<div class="alert alert-info">Please authenticate with your device...</div>';
+
+                // Step 3: Call WebAuthn API with proper configuration
+                // Use 'optional' mediation to show interactive passkey selector
+                let assertion = null;
+                try {
+                    console.log('Requesting passkey with optional mediation...');
+                    // Use optional mediation which shows an interactive dialog
+                    assertion = await navigator.credentials.get({
+                        publicKey: data.options,
+                        mediation: 'optional'
+                    });
+                } catch (e) {
+                    console.error("WebAuthn error:", e.name, e.message);
+                    // Show the error to the user
+                    statusDiv.innerHTML = '<div class="alert alert-danger">Error: ' + e.message + '</div>';
+                    return;
+                }
+
+                if (!assertion) {
+                    statusDiv.innerHTML = '<div class="alert alert-info">Authentication cancelled or no credentials selected</div>';
+                    console.log('No assertion returned');
+                    return;
+                }
+
+                console.log('Assertion received, sending to server...');
+
+                // Step 4: Send response to server
+                const finishResponse = await fetch('/api/auth/authenticate/finish', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        credentialId: arrayBufferToBase64Url(assertion.id),
+                        authenticatorData: arrayBufferToBase64Url(assertion.response.authenticatorData),
+                        clientDataJSON: arrayBufferToBase64Url(assertion.response.clientDataJSON),
+                        signature: arrayBufferToBase64Url(assertion.response.signature)
+                    })
+                });
+
+                const finishData = await finishResponse.json();
+
+                if (finishData.success) {
+                    statusDiv.innerHTML = '<div class="alert alert-success">✓ Authentication successful! Redirecting...</div>';
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1500);
+                } else {
+                    statusDiv.innerHTML = '<div class="alert alert-danger">Error: ' + (finishData.error || 'Authentication failed') + '</div>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                
+                // Handle specific error types
+                if (error.name === 'NotAllowedError') {
+                    statusDiv.innerHTML = '<div class="alert alert-info">Authentication cancelled or not allowed</div>';
+                } else if (error.name === 'NotSupportedError') {
+                    statusDiv.innerHTML = '<div class="alert alert-danger">WebAuthn is not supported on this device</div>';
+                } else if (error.name === 'InvalidStateError') {
+                    statusDiv.innerHTML = '<div class="alert alert-danger">Credential already registered</div>';
+                } else if (error.name === 'TimeoutError') {
+                    statusDiv.innerHTML = '<div class="alert alert-danger">Authentication request timed out</div>';
+                } else {
+                    statusDiv.innerHTML = '<div class="alert alert-danger">Error: ' + error.message + '</div>';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

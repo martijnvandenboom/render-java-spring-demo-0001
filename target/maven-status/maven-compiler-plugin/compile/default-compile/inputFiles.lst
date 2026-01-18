@@ -1,2 +1,13 @@
-/Users/ing.m.a.c.m.martijnvandenboom/Documents/webapps/Java/demo/src/main/java/com/example/demo/DemoApplication.java
-/Users/ing.m.a.c.m.martijnvandenboom/Documents/webapps/Java/demo/src/main/java/com/example/demo/HelloController.java
+/Users/ing.m.a.c.m.martijnvandenboom/Documents/webapps/Java/render-java-spring-demo-0001/src/main/java/com/example/demo/DemoApplication.java
+/Users/ing.m.a.c.m.martijnvandenboom/Documents/webapps/Java/render-java-spring-demo-0001/src/main/java/com/example/demo/HelloController.java
+/Users/ing.m.a.c.m.martijnvandenboom/Documents/webapps/Java/render-java-spring-demo-0001/src/main/java/com/example/demo/config/SecurityConfig.java
+/Users/ing.m.a.c.m.martijnvandenboom/Documents/webapps/Java/render-java-spring-demo-0001/src/main/java/com/example/demo/controller/AuthController.java
+/Users/ing.m.a.c.m.martijnvandenboom/Documents/webapps/Java/render-java-spring-demo-0001/src/main/java/com/example/demo/dto/RegisterRequest.java
+/Users/ing.m.a.c.m.martijnvandenboom/Documents/webapps/Java/render-java-spring-demo-0001/src/main/java/com/example/demo/dto/WebAuthnRegistrationRequest.java
+/Users/ing.m.a.c.m.martijnvandenboom/Documents/webapps/Java/render-java-spring-demo-0001/src/main/java/com/example/demo/dto/WebAuthnRegistrationResponse.java
+/Users/ing.m.a.c.m.martijnvandenboom/Documents/webapps/Java/render-java-spring-demo-0001/src/main/java/com/example/demo/entity/User.java
+/Users/ing.m.a.c.m.martijnvandenboom/Documents/webapps/Java/render-java-spring-demo-0001/src/main/java/com/example/demo/entity/WebAuthnCredential.java
+/Users/ing.m.a.c.m.martijnvandenboom/Documents/webapps/Java/render-java-spring-demo-0001/src/main/java/com/example/demo/repository/UserRepository.java
+/Users/ing.m.a.c.m.martijnvandenboom/Documents/webapps/Java/render-java-spring-demo-0001/src/main/java/com/example/demo/repository/WebAuthnCredentialRepository.java
+/Users/ing.m.a.c.m.martijnvandenboom/Documents/webapps/Java/render-java-spring-demo-0001/src/main/java/com/example/demo/service/CustomUserDetailsService.java
+/Users/ing.m.a.c.m.martijnvandenboom/Documents/webapps/Java/render-java-spring-demo-0001/src/main/java/com/example/demo/service/WebAuthnService.java
