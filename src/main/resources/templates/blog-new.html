@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Create New Post - Clean Blog</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/assets/favicon.ico}" />
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css" />
+    <link th:href="@{/css/styles.css}" rel="stylesheet" />
+</head>
+<body>
+    <!-- Navigation-->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <!-- Page Header-->
+    <header class="masthead" style="background-image: url('https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1920&h=600&fit=crop')">
+        <div class="container position-relative px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <div class="page-heading">
+                        <h1>Create New Post</h1>
+                        <span class="subheading">Share your thoughts with the world</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Main Content-->
+    <main class="mb-4">
+        <div class="container px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <form th:action="@{/blog/new}" th:object="${post}" method="post">
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="title" type="text" th:field="*{title}" 
+                                   placeholder="Enter post title..." required />
+                            <label for="title">Post Title</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="subtitle" type="text" th:field="*{subtitle}" 
+                                   placeholder="Enter subtitle..." required />
+                            <label for="subtitle">Subtitle</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="headerImageUrl" type="url" th:field="*{headerImageUrl}" 
+                                   placeholder="Enter header image URL (optional)" />
+                            <label for="headerImageUrl">Header Image URL (optional)</label>
+                            <small class="form-text text-muted">Leave empty for default image. Try Unsplash URLs!</small>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <textarea class="form-control" id="content" th:field="*{content}" 
+                                      placeholder="Write your post content here..." 
+                                      style="height: 300px" required></textarea>
+                            <label for="content">Content</label>
+                            <small class="form-text text-muted">Supports HTML formatting</small>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="published" th:field="*{published}" />
+                            <label class="form-check-label" for="published">
+                                Publish immediately (uncheck to save as draft)
+                            </label>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a th:href="@{/blog}" class="btn btn-secondary">Cancel</a>
+                            <button class="btn btn-primary" type="submit">Create Post</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Footer-->
+    <footer class="border-top">
+        <div class="container px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-7">
+                    <div class="small text-center text-muted fst-italic">Copyright &copy; Your Website 2024</div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/scripts.js}"></script>
+</body>
+</html>

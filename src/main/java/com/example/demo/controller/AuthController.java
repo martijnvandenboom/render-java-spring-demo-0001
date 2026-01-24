@@ -6,6 +6,7 @@ import com.example.demo.dto.WebAuthnRegistrationResponse;
 import com.example.demo.entity.User;
 import com.example.demo.entity.WebAuthnCredential;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.WebAuthnCredentialRepository;
 import com.example.demo.service.WebAuthnService;
 import com.google.gson.Gson;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,18 +22,23 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Controller
 public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private WebAuthnCredentialRepository webAuthnCredentialRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -84,6 +90,7 @@ public class AuthController {
         }
         
         String username = authentication.getName();
+        // Always fetch fresh user data from database
         User user = userRepository.findByUsername(username).orElse(null);
 
         if (user == null) {
@@ -94,8 +101,8 @@ public class AuthController {
         model.addAttribute("username", user.getUsername());
         model.addAttribute("webauthnEnabled", user.isWebauthnEnabled());
         
-        // Initialize credentials list to avoid lazy loading issues
-        List<WebAuthnCredential> creds = user.getCredentials();
+        // Fetch fresh credentials from database for this user
+        List<WebAuthnCredential> creds = webAuthnCredentialRepository.findByUser(user);
         if (creds != null) {
             model.addAttribute("credentials", creds);
             model.addAttribute("credentialCount", creds.size());
@@ -224,9 +231,61 @@ public class AuthController {
 
     @PostMapping("/api/auth/credential/remove")
     @ResponseBody
-    public String removeCredential(@RequestParam String credentialId) {
-        webAuthnService.removeCredential(credentialId);
-        return gson.toJson(new SuccessResponse("Credential removed"));
+    @Transactional
+    public String removeCredential(@RequestParam String credentialId, Authentication authentication) {
+        // Verify user is authenticated
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return gson.toJson(new ErrorResponse("User not authenticated"));
+        }
+        
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username).orElse(null);
+        
+        if (user == null) {
+            return gson.toJson(new ErrorResponse("User not found"));
+        }
+        
+        // Verify credential belongs to this user and exists in database
+        Optional<WebAuthnCredential> credentialOpt = webAuthnCredentialRepository.findByCredentialId(credentialId);
+        
+        if (credentialOpt.isEmpty() || !credentialOpt.get().getUser().getId().equals(user.getId())) {
+            System.out.println("Credential not found or does not belong to user: " + credentialId);
+            return gson.toJson(new ErrorResponse("Credential not found or does not belong to this user"));
+        }
+        
+        try {
+            System.out.println("[REMOVE] Starting credential removal for: " + credentialId);
+            System.out.println("[REMOVE] User: " + username);
+            
+            // Count before deletion
+            List<WebAuthnCredential> beforeDeletion = webAuthnCredentialRepository.findByUser(user);
+            System.out.println("[REMOVE] Credentials before deletion: " + beforeDeletion.size());
+            
+            // Delete the credential from database using repository (returns count of deleted records)
+            int deletedCount = webAuthnCredentialRepository.deleteByCredentialId(credentialId);
+            System.out.println("[REMOVE] Deleted " + deletedCount + " records from database");
+            
+            // Count after deletion
+            List<WebAuthnCredential> afterDeletion = webAuthnCredentialRepository.findByUser(user);
+            System.out.println("[REMOVE] Credentials after deletion: " + afterDeletion.size());
+            
+            // If no credentials left, disable WebAuthn
+            if (afterDeletion.isEmpty()) {
+                user.setWebauthnEnabled(false);
+                User savedUser = userRepository.save(user);
+                System.out.println("[REMOVE] WebAuthn disabled for user: " + username);
+                System.out.println("[REMOVE] Updated user webauthnEnabled: " + savedUser.isWebauthnEnabled());
+            } else {
+                System.out.println("[REMOVE] User still has " + afterDeletion.size() + " credentials remaining");
+            }
+            
+            System.out.println("[REMOVE] Credential removal completed successfully");
+            return gson.toJson(new SuccessResponse("Credential removed successfully"));
+        } catch (Exception e) {
+            System.err.println("[REMOVE] Error removing credential: " + e.getMessage());
+            e.printStackTrace();
+            return gson.toJson(new ErrorResponse("Error removing credential: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/api/auth/authenticate/begin")

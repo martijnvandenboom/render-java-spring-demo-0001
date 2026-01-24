@@ -3,11 +3,13 @@ package com.example.demo.service;
 import com.example.demo.entity.User;
 import com.example.demo.entity.WebAuthnCredential;
 import com.example.demo.repository.WebAuthnCredentialRepository;
-import com.yubico.webauthn.*;
 import com.yubico.webauthn.data.*;
 import com.yubico.webauthn.data.exception.Base64UrlException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.security.SecureRandom;
@@ -15,6 +17,8 @@ import java.util.*;
 
 @Service
 public class WebAuthnService {
+
+    private static final Logger logger = LoggerFactory.getLogger(WebAuthnService.class);
 
     @Autowired
     private WebAuthnCredentialRepository credentialRepository;
@@ -132,8 +136,15 @@ public class WebAuthnService {
         }
     }
 
+    @Transactional
     public void removeCredential(String credentialId) {
-        credentialRepository.deleteByCredentialId(credentialId);
+        try {
+            credentialRepository.deleteByCredentialId(credentialId);
+            logger.info("WebAuthn credential removed: " + credentialId);
+        } catch (Exception e) {
+            logger.error("Error removing credential: " + credentialId, e);
+            throw e;
+        }
     }
 
     private Set<AuthenticatorTransport> parseTransports(String transports) {
