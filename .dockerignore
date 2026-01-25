@@ -1,0 +1,36 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# Documentation
+*.md
+CHANGES_SUMMARY.md
+COMPLETION_CHECKLIST.md
+COMPLETION_SUMMARY.md
+FLOW_DIAGRAM.md
+HELP.md
+IMPLEMENTATION_SUMMARY.md
+QUICKSTART.md
+README.md
+UI_IMPROVEMENTS.md
+WEBAUTHN.md
+
+# Fly.io
+fly.toml

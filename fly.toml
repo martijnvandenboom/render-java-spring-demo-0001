@@ -1,0 +1,36 @@
+# fly.toml app configuration file generated for Spring Boot WebAuthn app
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+
+app = "render-java-spring-demo-0001"
+primary_region = "ams" # Amsterdam - change to your preferred region (iad=US East, lhr=London, etc.)
+
+[build]
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false  # Keep running 24/7
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "30s"
+    interval = "15s"
+    method = "GET"
+    timeout = "5s"
+    path = "/actuator/health"  # Spring Boot health check
+
+[env]
+  SERVER_PORT = "8080"
+  # Add any other environment variables here
+
+[[vm]]
+  memory = '512mb'
+  cpu_kind = 'shared'
+  cpus = 1
+
+# Optional: Configure for multiple regions (uncomment when scaling)
+# [[vm]]
+#   memory = '512mb'
+#   cpu_kind = 'shared'
+#   cpus = 1
