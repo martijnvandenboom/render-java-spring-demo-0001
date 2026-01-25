@@ -14,18 +14,19 @@ primary_region = "ams" # Amsterdam - change to your preferred region (iad=US Eas
   min_machines_running = 1
 
   [[http_service.checks]]
-    grace_period = "30s"
+    grace_period = "60s"  # Increased for Spring Boot startup
     interval = "15s"
     method = "GET"
-    timeout = "5s"
-    path = "/actuator/health"  # Spring Boot health check
+    timeout = "10s"
+    path = "/health"  # Simple health check endpoint
 
 [env]
   SERVER_PORT = "8080"
-  # Add any other environment variables here
+  JAVA_OPTS = "-Xmx400m -Xms256m"
+  SPRING_PROFILES_ACTIVE = "prod"
 
 [[vm]]
-  memory = '512mb'
+  memory = '1gb'  # Increased for reliable Spring Boot performance
   cpu_kind = 'shared'
   cpus = 1
 
