@@ -22,11 +22,11 @@ primary_region = "ams" # Amsterdam - change to your preferred region (iad=US Eas
 
 [env]
   SERVER_PORT = "8080"
-  JAVA_OPTS = "-Xmx400m -Xms256m"
+  JAVA_OPTS = "-Xmx350m -Xms200m"
   SPRING_PROFILES_ACTIVE = "prod"
 
 [[vm]]
-  memory = '1gb'  # Increased for reliable Spring Boot performance
+  memory = '512mb'  # Free tier compatible
   cpu_kind = 'shared'
   cpus = 1
 

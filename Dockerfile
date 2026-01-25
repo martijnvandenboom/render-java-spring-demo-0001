@@ -11,4 +11,4 @@ FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-Xmx400m","-Xms256m","-jar","app.jar"]
+ENTRYPOINT ["java","-Xmx350m","-Xms200m","-jar","app.jar"]
