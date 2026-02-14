@@ -74,11 +74,17 @@
         <div class="container px-4 px-lg-5">
             <div class="row gx-4 gx-lg-5 justify-content-center">
                 <div class="col-md-10 col-lg-8 col-xl-7">
-                    <div class="small text-center text-muted fst-italic">Copyright &copy; van den <strong style="display: inline-block; transform: scaleX(-1); font-weight: bold;">B</strong>oom - <span id="currentYear"></span></div>
+                    <div class="small text-center text-muted fst-italic">Copyright &copy; van den <strong style="display: inline-block; font-weight: bold; animation: rotateB 2s linear infinite;">B</strong>oom - <span id="currentYear"></span></div>
                 </div>
             </div>
         </div>
     </footer>
+    <style>
+        @keyframes rotateB {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+    </style>
     <script>
         document.getElementById('currentYear').textContent = new Date().getFullYear();
     </script>
